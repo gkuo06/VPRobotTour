@@ -1,7 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 
-def create_grid_graph(size, edge):
+def create_grid_graph(size, edge, checkpoints):
     G = nx.grid_2d_graph(size, size)
 
     #Can remove edges here to represent walls, but I forgot how to do that lol
@@ -35,12 +35,28 @@ def draw_grid(G, path=None):
 
     plt.show()
 
-def createGrid(start_x=1, start_y=0, end_x=10, end_y=10, edge=None):
+#The point is that path contains a list of tuples that represent the coordinates of the path it takes
+#False will represent the y-axis, True will represent the x-axis
+def calc_weight(path, num_turn=0, temp=False):
+    axis = path[0][1] == path[1][1]
+
+    for i in range(1,len(path)-1):
+        temp = path[i][1] == path[i+1][1]
+        if temp is not  axis:
+            num_turn+=1
+            axis=temp
+        print("Coordinates of node: " +str(path[i]))
+    print("Turned: " + str(num_turn))
+
+
+def createGrid(start_x=1, start_y=0, end_x=10, end_y=10, edge=None, checkpoints=None):
     #Initialize the graph
-    G = create_grid_graph(12, edge)
+    G = create_grid_graph(12, edge, checkpoints)
 
     #Find the shortest path from the start point to the end node
     path = nx.shortest_path(G, source=(int(start_y), int(start_x)), target=(int(end_y), int(end_x)), method='dijkstra')
+
+    calc_weight(path)
 
     #Draw it
     draw_grid(G, path)
@@ -64,7 +80,7 @@ def main():
         "13" : [((2,0),(3,0)), ((2,1),(3,1)), ((2,2),(3,2))],
         "14" : [((2,3),(3,3)), ((2,4),(3,4)), ((2,5),(3,5))],
         "15" : [((2,6),(3,6)), ((2,7),(3,7)), ((2,8),(3,8))],
-        "16" : [((2,9),(3,9)), ((2,10),(3,10)), ((2,11),(2,11))],
+        "16" : [((2,9),(3,9)), ((2,10),(3,10)), ((2,11),(3,11))],
         "17" : [((5,0),(6,0)), ((5,1),(6,1)), ((5,2),(6,2))],
         "18" : [((5,3),(6,3)), ((5,4),(6,4)), ((5,5),(6,5))],
         "19" : [((5,6),(6,6)), ((5,7),(6,7)), ((5,8),(6,8))],
@@ -104,16 +120,14 @@ def main():
         for i in range(8):
             missing_edges.append(edges_numbering[input("Enter an edge that is missing: ")])
 
-        '''
         checkpoints = []
         for i in range(4):
             checkpoints.append(boxes_numbering[input("Enter the boxes that are checkpoints: ")])
-        '''
 
         # Note to self when continuing: find a way to add all these edges to a list or smth and then create a for loop that graphs all the data from the dictionary COMPLETE
         # use: edges_numbering[edge_missing] as a parameter COMPLETE
         #Next, find a way to add the checkpoints, the process will be similar to the edge process, but this will require adjusting the Dijkstra algorithm a little
-        createGrid(x, y, a, b, missing_edges)
+        createGrid(x, y, a, b, missing_edges, checkpoints)
 
 if __name__ == "__main__":
     main()
