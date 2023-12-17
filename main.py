@@ -24,20 +24,20 @@ def draw_grid(G, path=None):
         if ((x // 3) + (y // 3)) % 2 == 0:
             color_map.append('orange')  # Replace 'color1' with your ORANGE
         else:
-            color_map.append('lightblue')  # Replace 'color2' with another LIGHT BLUE
+            color_map.append("lightblue")  # Replace 'color2' with another LIGHT BLUE
 
     nx.draw(G, pos, with_labels=True, node_color=color_map, node_size=600)
 
     if path:
         path_edges = list(zip(path, path[1:]))
-        nx.draw_networkx_nodes(G, pos, nodelist=path, node_color='green')
-        nx.draw_networkx_edges(G, pos, edgelist=path_edges, edge_color='green', width=2)
+        nx.draw_networkx_nodes(G, pos, nodelist=path, node_color="green")
+        nx.draw_networkx_edges(G, pos, edgelist=path_edges, edge_color="green", width=2)
 
     plt.show()
 
 #The point is that path contains a list of tuples that represent the coordinates of the path it takes
 #False will represent the y-axis, True will represent the x-axis
-def calc_weight(path, num_turn=0, temp=False):
+def calc_turns(path, num_turn=0, temp=False):
     axis = path[0][1] == path[1][1]
 
     for i in range(1,len(path)-1):
@@ -45,9 +45,11 @@ def calc_weight(path, num_turn=0, temp=False):
         if temp is not  axis:
             num_turn+=1
             axis=temp
-        print("Coordinates of node: " +str(path[i]))
-    print("Turned: " + str(num_turn))
+        print(f"Coordinates of node {i}: {path[i]}")
+    print(f"Turned: {num_turn}")
 
+def calc_weight(path, turns=None, turn_time=4, travel_time=1):
+    ...
 
 def createGrid(start_x=1, start_y=0, end_x=10, end_y=10, edge=None, checkpoints=None):
     #Initialize the graph
@@ -56,7 +58,7 @@ def createGrid(start_x=1, start_y=0, end_x=10, end_y=10, edge=None, checkpoints=
     #Find the shortest path from the start point to the end node
     path = nx.shortest_path(G, source=(int(start_y), int(start_x)), target=(int(end_y), int(end_x)), method='dijkstra')
 
-    calc_weight(path)
+    calc_turns(path)
 
     #Draw it
     draw_grid(G, path)
