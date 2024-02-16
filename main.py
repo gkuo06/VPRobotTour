@@ -21,7 +21,7 @@ def draw_grid(G, path=None):
     color_map = []
     for node in G.nodes():
         x, y = node
-        if ((x // 3) + (y // 3)) % 2 == 0:
+        if (x + y) % 2 == 0:
             color_map.append('orange')  # Replace 'color1' with ORANGE
         else:
             color_map.append("lightblue")  # Replace 'color2' with LIGHT BLUE
@@ -81,16 +81,16 @@ def calc_weight(G, start, end, edge, checkpoints, turns=None, turn_time=4, trave
 
     return nearest_checkpoint_coords
 
-def createGrid(start=(0,1), end=(10,10), edge=None, checkpoints=None):
+def createGrid(start=(0,0), end=(3,3), edge=None, checkpoints=None):
     # Initialize the graph
-    G = create_grid_graph(12, edge, checkpoints)
+    G = create_grid_graph(4, edge, checkpoints)
 
     # Split the path into many parts and then join together using list "full_path"
     if edge is not None and checkpoints is not None:
         waypoints = calc_weight(G, start, end, edge, checkpoints)
 
         full_path = []
-        path_directions = []
+        path_directions = ["forward"]
 
         full_path.extend(nx.shortest_path(G, source=start, target=waypoints[0], method="dijkstra")[:-1])
 
@@ -102,7 +102,7 @@ def createGrid(start=(0,1), end=(10,10), edge=None, checkpoints=None):
             if i < len(waypoints) - 2:
                 full_path.extend(path_segment[:-1])  # Exclude last node of segment
             else:
-                full_path.extend(path_segment)
+                full_path.extend(path_segment[:-1])
         full_path.extend(nx.shortest_path(G, source=waypoints[-1], target=end, method="dijkstra"))
         calc_turns(full_path)
 
@@ -113,7 +113,7 @@ def createGrid(start=(0,1), end=(10,10), edge=None, checkpoints=None):
         while i < len(segments):
             x1, y1 = segments[i-1][1][0] - segments[i-1][0][0], segments[i-1][1][1] - segments[i-1][0][1]
             x2, y2 = segments[i][1][0] - segments[i][0][0], segments[i][1][1] - segments[i][0][1]
-            cross_product = (x1 * y2) - (y1  * x2)
+            cross_product = (x1 * y2) - (y1 * x2)
 
             # Block detects whether the robot will go backwards by looking to see if the tuples in the pair are the same, it moves back one space and adds 2 to index var
             if segments[i][0] == segments[i][1]:
@@ -157,50 +157,37 @@ def createGrid(start=(0,1), end=(10,10), edge=None, checkpoints=None):
 def main():
     # List of coordinates of all the edges of the grid
     edges_numbering = {
-        "1" : [((0,2),(0,3)), ((1,2),(1,3)), ((2,2),(2,3))],
-        "2" : [((0,5),(0,6)), ((1,5),(1,6)), ((2,5),(2,6))],
-        "3" : [((0,8),(0,9)), ((1,8),(1,9)), ((2,8),(2,9))],
-        "4" : [((3,2),(3,3)), ((4,2),(4,3)), ((5,2),(5,3))],
-        "5" : [((3,5),(3,6)), ((4,5),(4,6)), ((5,5),(5,6))],
-        "6" : [((3,8),(3,9)), ((4,8),(4,9)), ((5,8),(5,9))],
-        "7" : [((6,2),(6,3)), ((7,2),(7,3)), ((8,2),(8,3))],
-        "8" : [((6,5),(6,6)), ((7,5),(7,6)), ((8,5),(8,6))],
-        "9" : [((6,8),(6,9)), ((7,8),(7,9)), ((8,8),(8,9))],
-        "10" : [((9,2),(9,3)), ((10,2),(10,3)), ((11,2),(11,3))],
-        "11" : [((9,5),(9,6)), ((10,5),(10,6)), ((11,5),(11,6))],
-        "12" : [((9,8),(9,9)), ((10,8),(10,9)), ((11,8),(11,9))],
-
-        "13" : [((2,0),(3,0)), ((2,1),(3,1)), ((2,2),(3,2))],
-        "14" : [((2,3),(3,3)), ((2,4),(3,4)), ((2,5),(3,5))],
-        "15" : [((2,6),(3,6)), ((2,7),(3,7)), ((2,8),(3,8))],
-        "16" : [((2,9),(3,9)), ((2,10),(3,10)), ((2,11),(3,11))],
-        "17" : [((5,0),(6,0)), ((5,1),(6,1)), ((5,2),(6,2))],
-        "18" : [((5,3),(6,3)), ((5,4),(6,4)), ((5,5),(6,5))],
-        "19" : [((5,6),(6,6)), ((5,7),(6,7)), ((5,8),(6,8))],
-        "20" : [((5,9),(6,9)), ((5,10),(6,10)), ((5,11),(6,11))],
-        "21" : [((8,0),(9,0)), ((8,1),(9,1)), ((8,2),(9,2))],
-        "22" : [((8,3),(9,3)), ((8,4),(9,4)), ((8,5),(9,5))],
-        "23" : [((8,6),(9,6)), ((8,7),(9,7)), ((8,8),(9,8))],
-        "24" : [((8,9),(9,9)), ((8,10),(9,10)), ((8,11),(9,11))]
+        "1" : [((0,0), (0,1))],
+        "2" : [((0,1), (0,2))],
+        "3" : [((0,2), (0,3))],
+        "4" : [((1,0), (1,1))],
+        "5" : [((1,1), (1,2))],
+        "6" : [((1,2), (1,3))],
+        "7" : [((2,0), (2,1))],
+        "8" : [((2,1), (2,2))],
+        "9" : [((2,2), (2,3))],
+        "10" : [((3,0), (3,1))],
+        "11" : [((3,1), (3,2))],
+        "12" : [((3,2), (3,3))],\
     }
     # List of coordinates for all the boxes in the track for a total of 16, each represented by a 3x3 node area
     boxes_numbering = {
-        "1" : [(0,0), (0,1), (0,2), (1,0), (1,2), (2,0), (2,1), (2,2)],
-        "2" : [(0,3), (0,4), (0,5), (1,3), (1,5), (2,3), (2,4), (2,5)],
-        "3" : [(0,6), (0,7), (0,8), (1,6), (1,8), (2,6), (2,7), (2,8)],
-        "4" : [(0,9), (0,10), (0,11), (1,9), (1,11), (2,9), (2,10), (2,11)],
-        "5" : [(3,0), (3,1), (3,2), (4,0), (4,2), (5,0), (5,1), (5,2)],
-        "6" : [(3,3), (3,4), (3,5), (4,3), (4,5), (5,3), (5,4), (5,5)],
-        "7" : [(3,6), (3,7), (3,8), (4,6), (4,8), (5,6), (5,7), (5,8)],
-        "8" : [(3,9), (3,10), (3,11), (4,9), (4,11), (5,9), (5,10), (5,11)],
-        "9" : [(6,0), (6,1), (6,2), (7,0), (7,2), (8,0), (8,1), (8,2)],
-        "10" : [(6,3), (6,4), (6,5), (7,3), (7,5), (8,3), (8,4), (8,5)],
-        "11" : [(6,6), (6,7), (6,8), (7,6), (7,8), (8,6), (8,7), (8,8)],
-        "12" : [(6,9), (6,10), (6,11), (7,9), (7,11), (6,9), (6,10), (6,11)],
-        "13" : [(9,0), (9,1), (9,2), (10,0), (10,2), (11,0), (11,1), (11,2)],
-        "14" : [(9,3), (9,4), (9,5), (10,3), (10,5), (11,3), (11,4), (11,5)],
-        "15" : [(9,6), (9,7), (9,8), (10,6), (10,8), (11,6), (11,7), (11,8)],
-        "16" : [(9,9), (9,10), (9,11), (10,9), (10,11), (11,9), (11,10), (11,11)]
+        "1" : (0,0),
+        "2" : (0,1),
+        "3" : (0,2),
+        "4" : (0,3),
+        "5" : (1,0),
+        "6" : (1,1),
+        "7" : (1,2),
+        "8" : (1,3),
+        "9" : (2,0),
+        "10" : (2,1),
+        "11" : (2,2),
+        "12" : (2,3),
+        "13" : (3,0),
+        "14" : (3,1),
+        "15" : (3,2),
+        "16" : (3,3)
     }
 
     if int(input("1 if default, 0 else: ")) == 1:
