@@ -5,13 +5,10 @@ import math
 def create_grid_graph(size, edge=None, checkpoints=None):
     G = nx.grid_2d_graph(size, size)
 
-    # Can remove edges here to represent walls, but I forgot how to do that lol
     # Add the part about checkpoints to this and make the conditional a compound conditional
     if edge is not None:
         for coordinate in edge:
             G.remove_edge(coordinate[0][0], coordinate[0][1])
-            G.remove_edge(coordinate[1][0], coordinate[1][1])
-            G.remove_edge(coordinate[2][0], coordinate[2][1])
 
     return G
 
@@ -58,6 +55,7 @@ def find_distance(coord1, coord2):
 # Idea is to find the coordinate of the node in each checkpoint that is closest to the most optimal path.
 # COMPLETED TESTING 12/20/23: NEED TO OPTIMIZE DISTANCE FORMULA, CHECK DISCORD FOR SCREENSHOT
 # DISTANCE FORMULA HAS BEEN OPTIMIZED, NOW CHECKS FOR DISTANCE IT NEEDS TO TRAVEL AS OPPOSED TO HOW CROW FLIES.
+
 def calc_weight(G, start, end, edge, checkpoints, turns=None, turn_time=4, travel_time=1):
     path = nx.shortest_path(G, source=start, target=end, method='dijkstra')
 
@@ -66,20 +64,19 @@ def calc_weight(G, start, end, edge, checkpoints, turns=None, turn_time=4, trave
     # Should in theory add all the nearest checkpoint coords to the list
     for checkpoint in checkpoints:
         min_distance = float("inf")
-        min_distance_coordinate = checkpoint[0]
-        for coord1 in checkpoint:
-            # DISTANCE FORMULA
-            for coord2 in path:
-                distance = len(nx.shortest_path(G, source=coord1, target=coord2, method='dijkstra'))
-                if distance < min_distance:
-                    min_distance = distance
-                    min_distance_coordinate = coord1
+        min_distance_coordinate = checkpoint
+        for coord2 in path:
+            distance = len(nx.shortest_path(G, source=checkpoint, target=coord2, method='dijkstra'))
+            if distance < min_distance:
+                min_distance = distance
+                min_distance_coordinate = checkpoint
         nearest_checkpoint_coords.append(min_distance_coordinate)
 
     nearest_checkpoint_coords = sorted(nearest_checkpoint_coords, key=lambda coord: find_distance(coord, start))
     print(f"Nearest coords: {nearest_checkpoint_coords}")
 
     return nearest_checkpoint_coords
+
 
 def createGrid(start=(0,0), end=(3,3), edge=None, checkpoints=None):
     # Initialize the graph
@@ -105,6 +102,7 @@ def createGrid(start=(0,0), end=(3,3), edge=None, checkpoints=None):
                 full_path.extend(path_segment[:-1])
         full_path.extend(nx.shortest_path(G, source=waypoints[-1], target=end, method="dijkstra"))
         calc_turns(full_path)
+        print(f"Path with coordinates: {full_path}")
 
         segments = list(zip(full_path, full_path[1:]))
 
@@ -157,18 +155,30 @@ def createGrid(start=(0,0), end=(3,3), edge=None, checkpoints=None):
 def main():
     # List of coordinates of all the edges of the grid
     edges_numbering = {
-        "1" : [((0,0), (0,1))],
-        "2" : [((0,1), (0,2))],
-        "3" : [((0,2), (0,3))],
-        "4" : [((1,0), (1,1))],
-        "5" : [((1,1), (1,2))],
-        "6" : [((1,2), (1,3))],
-        "7" : [((2,0), (2,1))],
-        "8" : [((2,1), (2,2))],
-        "9" : [((2,2), (2,3))],
-        "10" : [((3,0), (3,1))],
-        "11" : [((3,1), (3,2))],
-        "12" : [((3,2), (3,3))],\
+        "1": [((0,0), (0,1))],
+        "2": [((0,1), (0,2))],
+        "3": [((0,2), (0,3))],
+        "4": [((1,0), (1,1))],
+        "5": [((1,1), (1,2))],
+        "6": [((1,2), (1,3))],
+        "7": [((2,0), (2,1))],
+        "8": [((2,1), (2,2))],
+        "9": [((2,2), (2,3))],
+        "10": [((3,0), (3,1))],
+        "11": [((3,1), (3,2))],
+        "12": [((3,2), (3,3))],
+        "13": [((0,0), (1,0))],
+        "14": [((0,1), (1,1))],
+        "15": [((0,2), (1,2))],
+        "16": [((0,3), (1,3))],
+        "17": [((1,0), (2,0))],
+        "18": [((1,1), (2,1))],
+        "19": [((1,2), (2,2))],
+        "20": [((1,3), (2,3))],
+        "21": [((2,0), (3,0))],
+        "22": [((2,1), (3,1))],
+        "23": [((2,2), (3,2))],
+        "24": [((2,3), (3,3))]
     }
     # List of coordinates for all the boxes in the track for a total of 16, each represented by a 3x3 node area
     boxes_numbering = {
