@@ -54,4 +54,7 @@ z = tf.multiply(x,y) # Element-wise multiplication
 z = x * y # Also element-wise multiplication, most likely the better option
 print(z)
 
+z = tf.tensordot(x, y, axes=1) # Dot product
+print(z)
+
 # Indexing
